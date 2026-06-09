@@ -1,0 +1,104 @@
+/* editor.css — editor chrome only. The 3D scene itself is styled by
+   RUNTIME_CSS (injected from runtime.js) so the canvas matches the export. */
+
+:root {
+  --chrome: #11131b;
+  --chrome-2: #1a1d29;
+  --line: #2a2e3d;
+  --ink: #e8ebf4;
+  --muted: #9aa2b6;
+  --accent: #4ad5ff;
+}
+
+html, body { height: 100%; }
+body { margin: 0; font-family: "Segoe UI", system-ui, -apple-system, sans-serif; }
+
+/* Selection affordance on canvas nodes. */
+.node.is-selected { outline: 2px solid var(--accent); outline-offset: 6px; cursor: move; }
+.node.is-selected .face { outline: 1px solid rgba(74, 213, 255, 0.5); }
+.stage .node { cursor: pointer; }
+
+/* ---- Toolbar (top) ---- */
+.toolbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 20;
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  padding: 8px 14px;
+  background: rgba(17, 19, 27, 0.92);
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(8px);
+  color: var(--ink);
+}
+.tb-brand { font-weight: 700; letter-spacing: 2px; color: var(--accent); margin-right: 6px; }
+.tb-group { display: flex; gap: 6px; align-items: center;
+  padding-right: 14px; border-right: 1px solid var(--line); }
+.tb-group:last-child { border-right: none; }
+
+.toolbar button {
+  font: inherit; font-size: 13px; color: var(--ink);
+  background: var(--chrome-2); border: 1px solid var(--line);
+  border-radius: 7px; padding: 6px 11px; cursor: pointer;
+}
+.toolbar button:hover { background: #232838; border-color: #3a4055; }
+.toolbar button:active { transform: translateY(1px); }
+.tb-export { background: #1d3b46; border-color: #2c5b6b; color: #bff0ff; }
+.tb-export:hover { background: #234a58; }
+.tb-preview.is-active { background: #45371d; border-color: #6b552c; color: #ffe6b0; }
+
+.tb-dolly { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+.tb-dolly input[type="range"] { width: 180px; accent-color: var(--accent); }
+
+/* ---- Inspector (right) ---- */
+.inspector {
+  position: fixed; top: 49px; right: 0; bottom: 0; z-index: 19;
+  width: 290px; overflow-y: auto;
+  background: rgba(17, 19, 27, 0.94);
+  border-left: 1px solid var(--line);
+  backdrop-filter: blur(8px);
+  color: var(--ink);
+  padding: 14px;
+}
+.insp-head {
+  font-size: 12px; letter-spacing: 3px; color: var(--accent);
+  margin: 14px 0 10px; padding-bottom: 8px; border-bottom: 1px solid var(--line);
+}
+.insp-empty { color: var(--muted); font-size: 13px; line-height: 1.5; }
+
+.insp-row { display: grid; grid-template-columns: 96px 1fr; align-items: center;
+  gap: 8px; margin-bottom: 8px; }
+.insp-label { font-size: 12px; color: var(--muted); }
+.insp-row input, .insp-row textarea {
+  font: inherit; font-size: 13px; width: 100%;
+  background: #0e1018; color: var(--ink);
+  border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px;
+}
+.insp-row input[type="color"] { padding: 2px; height: 30px; }
+.insp-row input[type="checkbox"] { width: auto; justify-self: start; }
+.insp-textarea { grid-template-columns: 1fr; }
+.insp-textarea .insp-label { margin-bottom: 2px; }
+
+.insp-scene { margin-bottom: 12px; border: 1px solid var(--line);
+  border-radius: 8px; padding: 8px 10px; background: rgba(0,0,0,0.2); }
+.insp-scene summary { cursor: pointer; font-size: 12px; letter-spacing: 2px;
+  color: var(--muted); text-transform: uppercase; margin-bottom: 6px; }
+.insp-presets { grid-template-columns: 1fr; }
+.insp-presets { display: flex; gap: 6px; }
+.insp-presets button {
+  flex: 1; font: inherit; font-size: 12px; cursor: pointer;
+  background: var(--chrome-2); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 6px; padding: 5px;
+}
+
+/* ---- Hint ---- */
+.edit-hint {
+  position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 18;
+  font-size: 12px; letter-spacing: 1px; color: var(--muted);
+  background: rgba(17, 19, 27, 0.8); padding: 6px 12px; border-radius: 20px;
+  border: 1px solid var(--line);
+}
+
+/* ---- Preview mode hides all chrome ---- */
+body.previewing .toolbar,
+body.previewing .inspector,
+body.previewing .edit-hint { display: none; }
+body.previewing .node { cursor: default; }
+body.previewing .node.is-selected { outline: none; }
