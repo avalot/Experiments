@@ -164,18 +164,6 @@
     opacity: 0.8;
   }
 
-  /* Fallback for browsers without scroll-driven animations
-     (Safari / older Firefox): auto-cruise so there's still motion. */
-  @supports not (animation-timeline: scroll()) {
-    body { height: 100vh; }
-    .world { animation: cruise 24s linear infinite; }
-    @keyframes cruise {
-      from { transform: translateZ(0); }
-      to   { transform: translateZ(calc(6 * var(--spacing))); }
-    }
-    .hint::after { content: " — (auto-cruise: your browser lacks CSS scroll timelines)"; }
-  }
-
   @media (prefers-reduced-motion: reduce) {
     .hint, .scene::before { animation: none; }
   }
@@ -227,5 +215,24 @@
   </div>
 
   <div class="hint">Scroll to walk ↓</div>
+
+  <script>
+    /* Chrome/Edge drive the walk with the pure-CSS scroll-timeline above.
+       iOS Safari & Firefox lack it, so drive translateZ from scroll here.
+       Keep this value in sync with --depth in the CSS. */
+    if (!CSS.supports('animation-timeline', 'scroll()')) {
+      var world = document.querySelector('.world');
+      var DEPTH = 9000;
+      world.style.animation = 'none';
+      function walk() {
+        var max = document.body.scrollHeight - window.innerHeight;
+        var p = max > 0 ? window.scrollY / max : 0;
+        world.style.transform = 'translateZ(' + (p * DEPTH) + 'px)';
+      }
+      addEventListener('scroll', walk, { passive: true });
+      addEventListener('resize', walk);
+      walk();
+    }
+  </script>
 </body>
 </html>
