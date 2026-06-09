@@ -240,13 +240,24 @@
       var p = max > 0 ? 1 - window.scrollY / max : 0;   // scroll up => advance
       world.style.transform = 'translateZ(' + (p * DEPTH) + 'px)';
     }
-    function toStart() { window.scrollTo(0, maxScroll()); walk(); }
+    // Anchor at the very bottom. Scroll to a huge value so Safari clamps to the
+    // true bottom regardless of the (still-settling) toolbar/viewport height.
+    var userMoved = false;
+    ['touchstart', 'wheel', 'keydown'].forEach(function (ev) {
+      addEventListener(ev, function () { userMoved = true; }, { passive: true, once: true });
+    });
+    function toBottom() {
+      if (userMoved) return;            // never yank the page once you've interacted
+      window.scrollTo(0, 1e7);
+      walk();
+    }
 
     addEventListener('scroll', walk, { passive: true });
     addEventListener('resize', walk);
-    addEventListener('load', toStart);
-    toStart();
-    setTimeout(toStart, 60);            // re-anchor after the iOS toolbar settles
+    addEventListener('load', toBottom);
+    // Retry across the first moments while iOS finishes laying out / hiding the bar.
+    [0, 50, 150, 300, 500, 800, 1200].forEach(function (t) { setTimeout(toBottom, t); });
+    toBottom();
   </script>
 </body>
 </html>
