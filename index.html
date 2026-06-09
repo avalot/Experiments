@@ -18,8 +18,9 @@
     background: #0a0b10;
     color: #f4f6fb;
     font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
-    /* The scroll track. Its height is what the scroll-timeline reads. */
-    height: 800vh;
+    /* The scroll track. Shorter = each swipe covers more road.
+       ~400vh makes a half-screen swipe advance roughly one section. */
+    height: 400vh;
   }
 
   /* ---- The camera / viewport -------------------------------------- */
@@ -52,8 +53,10 @@
     position: absolute;
     left: 50%; top: 50%;
     transform-style: preserve-3d;
-    /* Scroll drives the whole thing forward. Pure CSS. */
+    /* Scroll drives the whole thing forward. Pure CSS.
+       Reversed so the page starts at the bottom and you scroll UP to walk in. */
     animation: walk linear both;
+    animation-direction: reverse;
     animation-timeline: scroll(root);
   }
 
@@ -214,25 +217,36 @@
     </div>
   </div>
 
-  <div class="hint">Scroll to walk ↓</div>
+  <div class="hint">Scroll up to walk ↑</div>
 
   <script>
-    /* Chrome/Edge drive the walk with the pure-CSS scroll-timeline above.
-       iOS Safari & Firefox lack it, so drive translateZ from scroll here.
-       Keep this value in sync with --depth in the CSS. */
-    if (!CSS.supports('animation-timeline', 'scroll()')) {
-      var world = document.querySelector('.world');
-      var DEPTH = 9000;
-      world.style.animation = 'none';
-      function walk() {
-        var max = document.body.scrollHeight - window.innerHeight;
-        var p = max > 0 ? window.scrollY / max : 0;
-        world.style.transform = 'translateZ(' + (p * DEPTH) + 'px)';
-      }
-      addEventListener('scroll', walk, { passive: true });
-      addEventListener('resize', walk);
-      walk();
+    /* Start at the bottom; scrolling UP walks you into the scene.
+       Chrome/Edge animate via the pure-CSS scroll-timeline (reversed above).
+       iOS Safari & Firefox lack it, so we drive translateZ from scroll here.
+       DEPTH must stay in sync with --depth in the CSS. */
+    history.scrollRestoration = 'manual';
+
+    var world = document.querySelector('.world');
+    var DEPTH = 9000;
+    var cssDriven = CSS.supports('animation-timeline', 'scroll()');
+    if (!cssDriven) world.style.animation = 'none';
+
+    function maxScroll() {
+      return Math.max(0, document.body.scrollHeight - window.innerHeight);
     }
+    function walk() {
+      if (cssDriven) return;            // CSS scroll-timeline handles the transform
+      var max = maxScroll();
+      var p = max > 0 ? 1 - window.scrollY / max : 0;   // scroll up => advance
+      world.style.transform = 'translateZ(' + (p * DEPTH) + 'px)';
+    }
+    function toStart() { window.scrollTo(0, maxScroll()); walk(); }
+
+    addEventListener('scroll', walk, { passive: true });
+    addEventListener('resize', walk);
+    addEventListener('load', toStart);
+    toStart();
+    setTimeout(toStart, 60);            // re-anchor after the iOS toolbar settles
   </script>
 </body>
 </html>
